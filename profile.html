@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile — AfterLight Market</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="page-wrap">
+  <header>
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <div class="logo-mark">A</div>
+        <span class="logo-text">AFTERLIGHT</span>
+      </a>
+      <nav>
+        <a href="index.html">Market</a>
+        <a href="mybets.html">My Bets</a>
+        <a href="leaderboard.html">Leaders</a>
+      </nav>
+      <div class="hdr-right">
+        <div class="bal"><div class="bal-coin">₡</div><span id="bal-num">0</span></div>
+        <a href="profile.html" class="avatar-btn" style="border-color: rgba(144,96,224,0.7);">S</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="profile-page">
+    <div class="prof-card">
+      <div class="prof-ava">S</div>
+      <div class="prof-name" id="prof-name">Loading...</div> <button onclick="changeName()" style="background:none; border:1px solid var(--gold); color:var(--gold); padding:4px 10px; border-radius:6px; cursor:pointer; font-size:12px; margin-bottom: 20px;">Change name</button>
+      <div class="prof-rank">✦ Elite Forecaster</div>
+      <button onclick="confirmLogOut()" style="margin-top: 10px; margin-bottom: 20px; background: rgba(240,80,80,0.1); border: 1px solid rgba(240,80,80,0.3); color: #f05050; padding: 10px 0px; border-radius: 12px; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: 600; width: 50%;">
+    Log out
+    </button>
+
+    <div style="margin-top: 24px; margin-bottom: 80px; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid var(--glass-border); text-align: left;">
+        <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.1em;">Security (Change password)</h3>
+        <input type="password" id="new-password" placeholder="Enter new password (min. 6 characters)" style="width: 100%; padding: 12px; margin-bottom: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: #fff; border-radius: 8px; font-family: 'Outfit', sans-serif;">
+        <button id="btn-save-pass" onclick="saveNewPassword()" style="width: 100%; background: var(--glass); border: 1px solid var(--glass-border); color: var(--text); padding: 12px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-family: 'Outfit', sans-serif; font-weight: 600;">Save new password</button>
+    </div>
+    
+      
+      <div class="stats-grid">
+        <div class="p-stat">
+          <div class="p-stat-v" id="p-bal" style="color: var(--gold);">₡0</div>
+          <div class="p-stat-l">Current balance</div>
+        </div>
+        <div class="p-stat">
+          <div class="p-stat-v" id="p-bets">0</div>
+          <div class="p-stat-l">Total bets</div>
+        </div>
+        <div class="p-stat">
+          <div class="p-stat-v" id="p-winrate" style="color: var(--green);">65%</div>
+          <div class="p-stat-l">Win rate</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 AfterLight Server</p>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="shared.js"></script>
+<script>
+async function confirmLogOut() {
+    if (confirm("Are you sure you want to log out?")) {
+        await SHARED.logOut();
+        window.location.href = 'index.html'; // Return to the homepage
+    }
+}
+</script>
+<script>
+
+// async function saveNewPassword() {
+//     const newPass = document.getElementById('new-password').value;
+//     if (!newPass || newPass.length < 6) {
+//         alert('⚠️ Password must be at least 6 characters long');
+//         return;
+//     }
+    
+//     // Find the button and disable it
+//     const btn = document.getElementById('btn-save-pass');
+//     btn.textContent = "Saving...";
+//     btn.disabled = true;
+
+//     try {
+//         await SHARED.updatePassword(newPass);
+//         alert('✅ Password changed successfully!');
+//         document.getElementById('new-password').value = '';
+//     } catch (e) {
+//         console.error(e);
+//         alert('❌ Error: ' + (e.message || 'Failed to change password'));
+//     } finally {
+//         btn.textContent = "Save new password";
+//         btn.disabled = false;
+//     }
+// }
+
+
+async function loadProfile() {
+  const balance = await SHARED.getBalance();
+  const bets = await SHARED.getBets();
+  
+  const balNum = document.getElementById('bal-num');
+  if(balNum) balNum.textContent = balance.toLocaleString();
+
+  if(document.getElementById('p-bal')) {
+    document.getElementById('p-bal').textContent = '₡' + balance.toLocaleString();
+  }
+  
+  if(document.getElementById('p-bets')) {
+    document.getElementById('p-bets').textContent = bets.length;
+  }
+  
+  if(document.getElementById('p-winrate')) {
+    const finished = bets.filter(b => b.status !== 'active');
+    if (finished.length > 0) {
+      const won = finished.filter(b => b.status === 'won').length;
+      const rate = Math.round((won / finished.length) * 100);
+      document.getElementById('p-winrate').textContent = rate + '%';
+    } else {
+      document.getElementById('p-winrate').textContent = '0%';
+    }
+  }
+
+  const profile = await SHARED.getProfile();
+  if (document.getElementById('prof-name')) {
+      document.getElementById('prof-name').textContent = profile.username || 'Player';
+  }
+}
+
+async function changeName() {
+    const newName = prompt("Enter new name (max 15 characters):");
+    if (newName && newName.trim().length > 0) {
+        await SHARED.updateUsername(newName.trim().substring(0, 15));
+        location.reload(); // Reload to refresh
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadProfile);
+</script>
+</body>
+</html>

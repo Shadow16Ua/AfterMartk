@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leaders — AfterLight Market</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="page-wrap">
+  <header>
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <div class="logo-mark">A</div>
+        <span class="logo-text">AFTERLIGHT</span>
+      </a>
+      <nav>
+        <a href="index.html">Market</a>
+        <a href="mybets.html">My Bets</a>
+        <a href="leaderboard.html" class="active">Leaders</a>
+      </nav>
+      <div class="hdr-right">
+        <div class="bal" id="bal-pill">
+          <div class="bal-coin">₡</div>
+          <span id="bal-num">0</span>
+        </div>
+        <div id="user-controls"></div> 
+      </div>
+    </div>
+  </header>
+
+  <div class="ld-page">
+    <div class="ld-header">
+      <div class="ld-eyebrow">Hall of Fame</div>
+      <h1 class="ld-title">Leaderboard</h1>
+    </div>
+
+    <div class="ld-table-wrap">
+      <table class="ld-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Max bet</th>
+            <th>Win rate</th>
+            <th>Capital</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ld-rank">#1</td>
+            <td><div class="ld-user"><div class="ld-ava" style="background:#a05030;">D</div> DragonKing</div></td>
+            <td style="color:var(--text)">₡12,000</td>
+            <td style="color:var(--text2)">78%</td>
+            <td class="ld-bal">₡45,200</td>
+          </tr>
+          <tr>
+            <td class="ld-rank">#2</td>
+            <td><div class="ld-user"><div class="ld-ava" style="background:#6040a0;">N</div> Nexus_UA</div></td>
+            <td style="color:var(--text)">₡8,500</td>
+            <td style="color:var(--text2)">62%</td>
+            <td class="ld-bal">₡31,050</td>
+          </tr>
+          <tr class="me">
+            <td class="ld-rank">#3</td>
+            <td><div class="ld-user"><div class="ld-ava" style="background:#9060e0;">S</div> Shadow_UA (You)</div></td>
+            <td style="color:var(--text)">₡5,000</td>
+            <td style="color:var(--text2)">65%</td>
+            <td class="ld-bal" id="ld-mybal">₡0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 AfterLight Server</p>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="shared.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('ld-mybal').textContent = '₡' + SHARED.getBalance().toLocaleString();
+  });
+</script>
+</body>
+</html>

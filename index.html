@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AfterLight Market — Game Prediction Market</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #f0a830;
+  --gold2: #ffc84a;
+  --gold-dim: #a06820;
+  --bg: #08070a;
+  --bg2: #0e0c12;
+  --bg3: #141018;
+  --glass: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.08);
+  --glass-hover: rgba(255,255,255,0.07);
+  --text: #ede8e0;
+  --text2: #8a8090;
+  --text3: #4a4458;
+  --gold-glass: rgba(240,168,48,0.08);
+  --gold-border: rgba(240,168,48,0.25);
+  --green: #34c77a;
+  --green-bg: rgba(52,199,122,0.1);
+  --red: #f05050;
+  --red-bg: rgba(240,80,80,0.1);
+  --r: 10px;
+  --r2: 16px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:14px;min-height:100vh;overflow-x:hidden}
+
+/* CANVAS BG */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.page-wrap{position:relative;z-index:1}
+
+/* GLOW ORBS */
+.orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;animation:orbFloat 12s ease-in-out infinite}
+.orb1{width:500px;height:500px;background:rgba(240,168,48,0.07);top:-150px;left:-100px;animation-delay:0s}
+.orb2{width:400px;height:400px;background:rgba(120,80,200,0.05);bottom:-100px;right:-80px;animation-delay:-6s}
+@keyframes orbFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-30px) scale(1.05)}}
+
+/* HEADER */
+header{border-bottom:1px solid var(--glass-border);background:rgba(8,7,10,0.7);backdrop-filter:blur(20px);position:sticky;top:0;z-index:100}
+.header-inner{max-width:1200px;margin:0 auto;padding:0 24px;height:58px;display:flex;align-items:center;gap:24px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.logo-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:#08070a}
+.logo-text{font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:var(--gold);letter-spacing:0.1em}
+.logo-badge{font-size:9px;background:var(--gold-glass);border:1px solid var(--gold-border);color:var(--gold);padding:1px 6px;border-radius:4px;letter-spacing:0.15em;margin-left:2px;vertical-align:middle}
+nav{display:flex;gap:2px;flex:1}
+nav a{color:var(--text2);text-decoration:none;font-size:13px;padding:6px 12px;border-radius:7px;transition:all .15s;font-weight:400}
+nav a:hover{color:var(--text);background:var(--glass)}
+nav a.active{color:var(--gold);background:var(--gold-glass)}
+.hdr-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+.bal{display:flex;align-items:center;gap:7px;background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;transition:border-color .15s}
+.bal:hover{border-color:var(--gold-border)}
+.bal-coin{width:18px;height:18px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#08070a}
+.btn-acc{background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:8px;padding:7px 16px;font-size:12px;font-weight:600;color:#08070a;cursor:pointer;font-family:'Outfit',sans-serif;letter-spacing:0.04em;transition:opacity .15s}
+.btn-acc:hover{opacity:.85}
+.avatar-btn{width:32px;height:32px;background:linear-gradient(135deg,#6040a0,#9060e0);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;cursor:pointer;text-decoration:none;border:1px solid rgba(144,96,224,0.4);transition:border-color .15s}
+.avatar-btn:hover{border-color:rgba(144,96,224,0.7)}
+
+/* HERO */
+.hero{max-width:1200px;margin:0 auto;padding:52px 24px 36px;display:flex;justify-content:space-between;align-items:flex-end;gap:32px}
+.hero-eyebrow{font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;font-weight:500}
+.hero-h1{font-family:'Outfit',sans-serif;font-size:42px;font-weight:700;line-height:1.1;letter-spacing:-0.02em}
+.hero-h1 em{font-style:normal;background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{margin-top:12px;color:var(--text2);font-size:14px;max-width:440px;line-height:1.7;font-weight:300}
+.stats-strip{display:flex;gap:1px;flex-shrink:0}
+.stat{background:var(--glass);border:1px solid var(--glass-border);padding:16px 22px;text-align:center}
+.stat:first-child{border-radius:var(--r2) 0 0 var(--r2)}
+.stat:last-child{border-radius:0 var(--r2) var(--r2) 0}
+.stat-n{font-size:22px;font-weight:700;background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:'Outfit',sans-serif}
+.stat-l{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.15em;margin-top:2px}
+
+/* FILTERS */
+.filters{max-width:1200px;margin:0 auto;padding:0 24px 24px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fbtn{background:var(--glass);border:1px solid var(--glass-border);color:var(--text2);border-radius:20px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;font-weight:400}
+.fbtn:hover{border-color:var(--gold-border);color:var(--text)}
+.fbtn.on{background:var(--gold-glass);border-color:var(--gold-border);color:var(--gold)}
+.fsep{width:1px;height:18px;background:var(--glass-border);margin:0 2px}
+.fsort{background:var(--glass);border:1px solid var(--glass-border);color:var(--text2);border-radius:8px;padding:5px 10px;font-size:12px;font-family:'Outfit',sans-serif;cursor:pointer;margin-left:auto;outline:none}
+
+/* SECTION LABEL */
+.sec-label{max-width:1200px;margin:0 auto;padding:0 24px 18px;display:flex;align-items:center;gap:12px}
+.sec-l-txt{font-size:11px;text-transform:uppercase;letter-spacing:0.2em;color:var(--text3);white-space:nowrap;font-weight:500}
+.sec-l-line{flex:1;height:1px;background:var(--glass-border)}
+
+/* GRID */
+.mgrid-wrap{max-width:1200px;margin:0 auto;padding:0 24px 72px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+
+/* CARD */
+.card{
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  border-radius:var(--r2);
+  backdrop-filter:blur(12px);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  cursor:pointer;
+  transition:border-color .2s, transform .2s, box-shadow .2s;
+  opacity:0;
+  transform:translateY(16px);
+  animation:cardIn .4s forwards;
+}
+.card:hover{border-color:rgba(240,168,48,0.35);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.4),0 0 0 1px rgba(240,168,48,0.1)}
+@keyframes cardIn{to{opacity:1;transform:translateY(0)}}
+.card:nth-child(1){animation-delay:.05s}.card:nth-child(2){animation-delay:.1s}.card:nth-child(3){animation-delay:.15s}.card:nth-child(4){animation-delay:.2s}.card:nth-child(5){animation-delay:.25s}.card:nth-child(6){animation-delay:.3s}
+
+.card-glow{height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .2s}
+.card:hover .card-glow{opacity:1}
+
+.card-top{padding:16px 16px 12px;flex:1}
+.cmeta{display:flex;align-items:center;gap:7px;margin-bottom:11px}
+.tag{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;padding:3px 9px;border-radius:5px;font-weight:600}
+.tw{background:rgba(240,80,80,.12);color:#f07070;border:1px solid rgba(240,80,80,.2)}
+.te{background:rgba(240,168,48,.1);color:var(--gold);border:1px solid var(--gold-border)}
+.tp{background:rgba(64,144,208,.1);color:#70b0e8;border:1px solid rgba(64,144,208,.2)}
+.tv{background:rgba(52,199,122,.1);color:#60d890;border:1px solid rgba(52,199,122,.2)}
+.ts{background:rgba(160,80,220,.1);color:#c080f0;border:1px solid rgba(160,80,220,.2)}
+
+.badge-live{margin-left:auto;font-size:10px;color:#f05050;display:flex;align-items:center;gap:4px;font-weight:500}
+.badge-live::before{content:'';width:5px;height:5px;background:#f05050;border-radius:50%;animation:blink 1.4s infinite}
+.badge-soon{margin-left:auto;font-size:10px;color:#f07050;font-weight:500}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+.cq{font-size:15px;font-weight:500;line-height:1.45;margin-bottom:14px;color:var(--text)}
+
+/* YES/NO BARS */
+.outcomes{display:flex;flex-direction:column;gap:9px}
+.oc{display:flex;flex-direction:column;gap:4px}
+.oc-row{display:flex;justify-content:space-between;align-items:center}
+.oc-lbl{font-size:12px;color:var(--text2)}
+.oc-pct{font-size:13px;font-weight:600}
+.oc-pct.y{color:var(--green)}.oc-pct.n{color:var(--red)}
+.bar{height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+.bar-f{height:100%;border-radius:3px;transition:width .6s ease}
+.bar-f.y{background:linear-gradient(90deg,#1a8050,var(--green))}
+.bar-f.n{background:linear-gradient(90deg,#801a1a,var(--red))}
+
+/* MULTI */
+.oc-multi{display:flex;align-items:center;gap:8px;padding:3px 0}
+.oc-m-lbl{font-size:12px;color:var(--text2);min-width:100px}
+.oc-m-track{flex:1;height:24px;background:rgba(255,255,255,0.04);border-radius:5px;overflow:hidden}
+.oc-m-fill{height:100%;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:600;color:rgba(0,0,0,.75);transition:width .6s}
+.oc-m-pct{font-size:13px;font-weight:600;color:var(--gold);min-width:34px;text-align:right}
+
+/* CARD BOTTOM */
+.cbot{padding:10px 16px 14px;border-top:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cinfo{display:flex;gap:16px}
+.ci{display:flex;flex-direction:column}
+.ci-v{font-size:13px;font-weight:500}
+.ci-l{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
+.btn-bet{background:var(--gold-glass);border:1px solid var(--gold-border);color:var(--gold);border-radius:8px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;letter-spacing:.04em;transition:all .15s;white-space:nowrap}
+.btn-bet:hover{background:rgba(240,168,48,.18);border-color:var(--gold)}
+.btn-bet:disabled{opacity:.3;cursor:default;pointer-events:none}
+
+/* MODAL */
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .2s}
+.moverlay.on{opacity:1;pointer-events:all}
+.modal{background:rgba(16,14,20,.95);border:1px solid rgba(240,168,48,.3);border-radius:20px;width:100%;max-width:440px;overflow:hidden;transform:translateY(16px) scale(.98);transition:transform .22s;backdrop-filter:blur(20px)}
+.moverlay.on .modal{transform:none}
+.mhdr{padding:20px 20px 14px;border-bottom:1px solid var(--glass-border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.mttl{font-size:15px;font-weight:500;line-height:1.4}
+.mcls{background:transparent;border:none;color:var(--text2);font-size:22px;cursor:pointer;line-height:1;padding:0 2px;font-family:'Outfit',sans-serif}
+.mcls:hover{color:var(--text)}
+.mbdy{padding:20px}
+
+.odds-row{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.obtn{flex:1;min-width:calc(50% - 4px);padding:12px 8px;border-radius:10px;border:1.5px solid var(--glass-border);background:var(--glass);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;text-align:center}
+.obtn-lbl{font-size:11px;color:var(--text2);margin-bottom:4px}
+.obtn-pct{font-size:20px;font-weight:700}
+.obtn.yes-b:hover,.obtn.yes-b.sel{border-color:var(--green);background:var(--green-bg)}
+.obtn.yes-b .obtn-pct{color:var(--green)}
+.obtn.no-b:hover,.obtn.no-b.sel{border-color:var(--red);background:var(--red-bg)}
+.obtn.no-b .obtn-pct{color:var(--red)}
+.obtn.mul-b:hover,.obtn.mul-b.sel{border-color:var(--gold);background:var(--gold-glass)}
+.obtn.mul-b .obtn-pct{color:var(--gold)}
+
+.ilbl{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);margin-bottom:6px;display:flex;justify-content:space-between}
+.ilbl span{color:var(--gold)}
+.iamtwrap{display:flex;align-items:center;background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;overflow:hidden;transition:border-color .15s;margin-bottom:8px}
+.iamtwrap:focus-within{border-color:var(--gold-border)}
+.icoin{padding:0 12px;color:var(--gold);font-size:15px;font-weight:600}
+.iamt{background:transparent;border:none;outline:none;color:var(--text);font-size:17px;font-weight:600;font-family:'Outfit',sans-serif;width:100%;padding:11px 0}
+.qbtns{display:flex;gap:6px;margin-bottom:16px}
+.qbtn{background:var(--glass);border:1px solid var(--glass-border);color:var(--text2);border-radius:6px;padding:4px 11px;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s}
+.qbtn:hover{border-color:var(--gold-border);color:var(--gold)}
+
+.payout-box{background:var(--gold-glass);border:1px solid var(--gold-border);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.pay-lbl{font-size:12px;color:var(--text2)}
+.pay-mult{font-size:11px;color:var(--text3);margin-top:2px}
+.pay-amt{font-size:22px;font-weight:700;color:var(--gold)}
+.btn-confirm{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:10px;padding:13px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#08070a;transition:opacity .15s}
+.btn-confirm:hover{opacity:.88}
+.btn-confirm:disabled{opacity:.3;cursor:default}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:rgba(20,18,26,.95);border:1px solid rgba(240,168,48,.35);border-radius:12px;padding:12px 18px;font-size:13px;color:var(--text);z-index:9999;transform:translateY(60px);opacity:0;transition:all .25s;display:flex;align-items:center;gap:9px;max-width:300px;backdrop-filter:blur(12px)}
+.toast.on{transform:none;opacity:1}
+
+/* ADMIN */
+.adm-toggle{display: none; position:fixed;bottom:24px;left:24px;background:var(--glass);border:1px solid var(--glass-border);color:var(--text2);border-radius:8px;padding:7px 14px;font-size:11px;font-family:'Outfit',sans-serif;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;z-index:100;transition:all .15s;backdrop-filter:blur(8px)}
+.adm-toggle:hover{border-color:var(--gold-border);color:var(--gold)}
+.adm-panel{position:fixed;bottom:60px;left:24px;width:310px;background:rgba(14,12,18,.97);border:1px solid rgba(240,168,48,.3);border-radius:16px;padding:18px;z-index:100;display:none;backdrop-filter:blur(20px)}
+.adm-panel.on{display:block}
+.adm-title{font-size:12px;font-weight:600;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.adm-panel input,.adm-panel select,.adm-panel textarea{width:100%;background:var(--glass);border:1px solid var(--glass-border);color:var(--text);border-radius:8px;padding:8px 10px;font-family:'Outfit',sans-serif;font-size:12px;margin-bottom:7px;outline:none;transition:border-color .15s}
+.adm-panel input:focus,.adm-panel select:focus,.adm-panel textarea:focus{border-color:var(--gold-border)}
+.adm-panel select option{background:#0e0c12}
+.adm-panel textarea{resize:vertical;min-height:50px}
+.btn-adm{width:100%;background:var(--gold-glass);border:1px solid var(--gold-border);color:var(--gold);border-radius:8px;padding:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;text-transform:uppercase;letter-spacing:.06em;transition:background .15s}
+.btn-adm:hover{background:rgba(240,168,48,.18)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--glass-border);text-align:center;padding:24px;color:var(--text3);font-size:11px;letter-spacing:.06em}
+footer a{color:var(--text2);text-decoration:none}
+footer a:hover{color:var(--gold)}
+.empty{grid-column:1/-1;text-align:center;padding:60px;color:var(--text3);font-size:13px}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="page-wrap">
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-mark">A</div>
+      <span class="logo-text">AFTERLIGHT</span>
+      <span class="logo-badge">MARKET</span>
+    </a>
+    <nav>
+      <a href="index.html" class="active">Market</a>
+      <a href="mybets.html">My Bets</a>
+      <!-- <a href="leaderboard.html">Leaders</a> -->
+      <a href="https://shadow16ua.github.io" target="_blank">← Server</a>
+    </nav>
+    <div class="hdr-right">
+      <div class="bal" id="bal-pill">
+        <div class="bal-coin">₡</div><span id="bal-num">0</span>
+      </div>
+      <div id="user-controls"></div> 
+    </div>
+  </div>
+</header>
+
+<div class="hero">
+  <div>
+    <div class="hero-eyebrow">✦ Season 2 · AfterLight Server</div>
+    <h1 class="hero-h1">Market<br><em>Predictions</em></h1>
+    <p class="hero-sub">Bet in-game currency on server events. Win — multiply capital.</p>
+  </div>
+  <div class="stats-strip">
+    <div class="stat"><div class="stat-n" id="s-ev">6</div><div class="stat-l">Events</div></div>
+    <div class="stat"><div class="stat-n" id="s-vol">₡26k</div><div class="stat-l">Volume</div></div>
+    <div class="stat"><div class="stat-n" id="s-pl">42</div><div class="stat-l">Players</div></div>
+  </div>
+</div>
+
+<div class="filters">
+  <button class="fbtn on" onclick="doFilter('all',this)">All</button>
+  <button class="fbtn" onclick="doFilter('war',this)">⚔ War</button>
+  <button class="fbtn" onclick="doFilter('politics',this)">🏛 Politics</button>
+  <button class="fbtn" onclick="doFilter('economy',this)">📈 Economy</button>
+  <button class="fbtn" onclick="doFilter('event',this)">🎉 Event</button> 
+  <button class="fbtn" onclick="doFilter('social',this)">👥 Social</button>
+  <div class="fsep"></div>
+  <select class="fsort" onchange="doSort(this.value)">
+    <option value="new">New first</option>
+    <option value="vol">By volume</option>
+    <option value="end">Closing soon</option>
+  </select>
+</div>
+
+<div class="sec-label"><span class="sec-l-txt">Active markets</span><div class="sec-l-line"></div></div>
+
+<div class="mgrid-wrap">
+  <div class="mgrid" id="grid"></div>
+</div>
+
+<footer>
+  <p>© 2026 AfterLight Server · <a href="https://shadow16ua.github.io">Main site</a> · In-game currency, no real-world value</p>
+</footer>
+</div>
+
+<!-- MODAL -->
+<div class="moverlay" id="moverlay" onclick="tryClose(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhdr">
+      <div class="mttl" id="mttl"></div>
+      <button class="mcls" onclick="closeM()">×</button>
+    </div>
+    <div class="mbdy">
+      <div class="odds-row" id="odds-row"></div>
+      <div class="ilbl">Bet amount <span id="bal-lbl"></span></div>
+      <div class="iamtwrap">
+        <span class="icoin">₡</span>
+        <input type="number" class="iamt" id="iamt" min="1" value="100" oninput="calcPay()">
+      </div>
+      <div class="qbtns">
+        <button class="qbtn" onclick="setAmt(50)">50</button>
+        <button class="qbtn" onclick="setAmt(100)">100</button>
+        <button class="qbtn" onclick="setAmt(250)">250</button>
+        <button class="qbtn" onclick="setAmt(500)">500</button>
+        <button class="qbtn" onclick="setAmt(balance)">Max</button>
+      </div>
+      <div class="payout-box">
+        <div><div class="pay-lbl">Win if correct</div><div class="pay-mult" id="pmult"></div></div>
+        <div class="pay-amt" id="pamt">₡ —</div>
+      </div>
+      <button class="btn-confirm" id="bconf" onclick="doBet()">Place bet</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="t-ico"></span><span id="t-msg"></span></div>
+
+<!-- ADMIN -->
+<button class="adm-toggle" onclick="toggleAdm()">⚙ Admin</button>
+<div class="adm-panel" id="adm">
+  <div class="adm-title">New Event</div>
+  <input type="text" id="a-q" name="question" placeholder="Question...">
+  <select id="a-type" name="event_type">
+    <option value="yesno">Yes / No</option>
+    <option value="multi">Multiple options</option>
+  </select>
+  <select id="a-tag" name="tag">
+    <option value="war">⚔ War</option>
+    <option value="politics">🏛 Politics</option>
+    <option value="economy">📈 Economy</option>
+    <option value="event">🎉 Event</option>
+    <option value="social">👥 Social</option>
+  </select>
+  <input type="text" id="a-opts" name="options" placeholder="Options separated by comma (for multi)">
+  <input type="date" id="a-dl" name="deadline">
+  <button class="btn-adm" onclick="addEv()">Publish</button>
+
+  <hr style="border:none; border-top:1px solid var(--glass-border); margin:18px 0;">
+  
+  <div class="adm-title" style="color:var(--red)">Delete event</div>
+  <div id="delete-list" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;"></div>
+    
+  <hr style="border:none; border-top:1px solid var(--glass-border); margin:18px 0;">
+  
+  <div class="adm-title" style="color:var(--green)">Resolve event (Result)</div>
+  <select id="res-ev" name="resolve_event" onchange="updateResOptions()">
+    <option value="">Select an event...</option>
+  </select>
+  <select id="res-opt" name="winning_option" disabled>
+    <option value="">Select a result...</option>
+  </select>
+  <button class="btn-adm" style="background:var(--green-bg); color:var(--green); border-color:var(--green);" onclick="resolveEv()">Confirm result</button>
+</div>
+
+<div class="moverlay" id="auth-modal" style="z-index: 500;">
+  <div class="modal" style="max-width: 350px;">
+    <div class="mhdr">
+      <div class="mttl" id="auth-title">Log in</div>
+      <button class="mcls" onclick="document.getElementById('auth-modal').classList.remove('on')">×</button>
+    </div>
+    <div class="mbdy">
+      <input type="email" id="auth-email" placeholder="Email" style="width:100%; padding:10px; margin-bottom:10px; background:var(--glass); border:1px solid var(--glass-border); color:#fff; border-radius:8px;">
+      <input type="password" id="auth-pass" placeholder="Password (min. 6 characters)" style="width:100%; padding:10px; margin-bottom:10px; background:var(--glass); border:1px solid var(--glass-border); color:#fff; border-radius:8px;">
+      
+      <div id="forgot-pass-wrap" style="text-align: right; margin-bottom: 15px;">
+        <a href="#" onclick="forgotPassword()" style="color: var(--text2); font-size: 11px; text-decoration: underline;">Forgot password?</a>
+      </div>
+
+      <div id="reg-name-group" style="display:none;">
+          <input type="text" id="auth-name" placeholder="Your nickname" style="width:100%; padding:10px; margin-bottom:15px; background:var(--glass); border:1px solid var(--glass-border); color:#fff; border-radius:8px;">
+      </div>
+
+      <button class="btn-confirm" id="btn-login" onclick="handleAuth(false)">Log in</button>
+      <button class="btn-confirm" id="btn-register" onclick="handleAuth(true)" style="display:none; background:var(--green-bg); color:var(--green); border:1px solid var(--green);">Create account</button>
+      
+      <div style="text-align:center; margin-top:15px; font-size:12px; color:var(--text2);">
+          <span id="auth-switch-text">Don't have an account? </span>
+          <a href="#" id="auth-toggle-link" onclick="toggleAuthMode()" style="color:var(--gold); text-decoration:underline;">Register</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="shared.js"></script>
+<script>
+// ── DATA AND STATE ──────────────────────────────────────
+let balance = 0, events = [], curEv = null, selOut = null, curFilter = 'all', curSort = 'new';
+
+// 1. LOADING (Async)
+// Change start of loadEvents to this:
+async function loadEvents() {
+  const uid = await SHARED.getCurrentUser();
+  const userControls = document.getElementById('user-controls');
+  
+  if (!uid) {
+      // Show the "Log in" button
+      userControls.innerHTML = '<button onclick="document.getElementById(\'auth-modal\').classList.add(\'on\')" style="background:var(--gold-glass); border:1px solid var(--gold-border); color:var(--gold); padding:6px 14px; border-radius:8px; cursor:pointer; font-family:\'Outfit\',sans-serif;">Log in</button>';
+  } else {
+      // Show avatar
+      const profile = await SHARED.getProfile();
+      userControls.innerHTML = `<a href="profile.html" class="avatar-btn">${(profile?.username || 'G')[0].toUpperCase()}</a>`;
+      
+      balance = await SHARED.getBalance();
+      if(document.getElementById('bal-num')) document.getElementById('bal-num').textContent = balance.toLocaleString();
+  }
+  
+  events = await SHARED.getEvents();
+  applyFS();
+  await populateAdminDropdown();
+}
+document.addEventListener('DOMContentLoaded', loadEvents);
+
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, parts = [];
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+function mkPart(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+.3,vx:(Math.random()-.5)*.15,vy:-(Math.random()*.2+.05),a:Math.random()*.5+.1,gold:Math.random()>.7}}
+function initParts(){resize();parts=[];for(let i=0;i<90;i++)parts.push(mkPart())}
+function drawParts(){
+  ctx.clearRect(0,0,W,H);
+  parts.forEach(p=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=p.gold?`rgba(240,168,48,${p.a})`:`rgba(180,160,220,${p.a*.4})`;
+    ctx.fill();
+    p.x+=p.vx;p.y+=p.vy;p.a+=Math.sin(Date.now()*.001+p.x)*.002;
+    if(p.y<-5||p.a<0.02){Object.assign(p,mkPart());p.y=H+5}
+  });
+  requestAnimationFrame(drawParts);
+}
+window.addEventListener('resize',initParts);
+initParts();drawParts();
+
+const tagMap={war:'tw',politics:'tp',economy:'te',event:'tv',social:'ts'};
+const tagLabel={war:'⚔ War',politics:'🏛 Politics',economy:'📈 Economy',event:'🎉 Event',social:'👥 Society'};
+const mColors=['#f0a830','#34c77a','#60a8e8','#f05050','#c080f0'];
+function fmt(n){return n>=1000?(n/1000).toFixed(1)+'k':n}
+function days(d){const diff=(new Date(d)-new Date())/86400000;if(diff<0)return'Finished';if(diff<1)return'<1 day';return Math.ceil(diff)+' d'}
+
+function applyFS(){
+  let list = curFilter === 'all' ? [...events] : events.filter(e => e.tag === curFilter);
+  
+  list.sort((a, b) => {
+    const orderA = a.status === 'finished' ? 1 : 0;
+    const orderB = b.status === 'finished' ? 1 : 0;
+    if (orderA !== orderB) return orderA - orderB;
+    
+    if (curSort === 'vol') return b.volume - a.volume;
+    if (curSort === 'end') return new Date(a.deadline) - new Date(b.deadline);
+    return b.id - a.id; 
+  });
+  
+  renderAll(list);
+}
+function doFilter(f,btn){curFilter=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');applyFS()}
+function doSort(v){curSort=v;applyFS()}
+
+function renderCard(ev){
+  const isFinished = ev.status === 'finished';
+  const dl = isFinished ? 'Finished' : days(ev.deadline);
+  const soon = ev.status === 'soon';
+  const live = ev.status === 'live';
+  
+  let bars='';
+  if(ev.type==='yesno'){
+    bars=`<div class="outcomes">
+      <div class="oc"><div class="oc-row"><span class="oc-lbl">Yes</span><span class="oc-pct y">${ev.yes}%</span></div><div class="bar"><div class="bar-f y" style="width:${ev.yes}%"></div></div></div>
+      <div class="oc"><div class="oc-row"><span class="oc-lbl">No</span><span class="oc-pct n">${ev.no}%</span></div><div class="bar"><div class="bar-f n" style="width:${ev.no}%"></div></div></div>
+    </div>`;
+  } else {
+    bars='<div class="outcomes">'+(ev.options || []).map((o,i)=>`<div class="oc-multi"><span class="oc-m-lbl">${o.label}</span><div class="oc-m-track"><div class="oc-m-fill" style="width:${o.pct}%;background:${mColors[i%mColors.length]};min-width:${o.pct>10?'28px':'0'}">${o.pct>12?o.pct+'%':''}</div></div><span class="oc-m-pct">${o.pct}%</span></div>`).join('')+'</div>';
+  }
+
+  let badgeHtml = isFinished 
+    ? `<span style="font-size:10px; color:var(--text2); border: 1px solid var(--glass-border); padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.3);">✅ Finished</span>`
+    : (live ? `<span class="badge-live">LIVE</span>` : (soon ? `<span class="badge-soon">⚡ Soon</span>` : ''));
+
+  let winnerText = isFinished && ev.winner 
+    ? `<div style="color:var(--gold); font-size:13px; margin-bottom:12px; font-weight:600; background: var(--gold-glass); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--gold-border);">🏆 Result: ${ev.winner}</div>` 
+    : '';
+
+  return `<div class="card" data-tag="${ev.tag}" onclick="${isFinished ? '' : `openM(${ev.id})`}" style="${isFinished ? 'opacity: 0.6; filter: grayscale(30%); cursor: default;' : ''}">
+    <div class="card-glow"></div>
+    <div class="card-top">
+      <div class="cmeta"><span class="tag ${tagMap[ev.tag]||'te'}">${tagLabel[ev.tag]||ev.tag}</span><div style="margin-left:auto">${badgeHtml}</div></div>
+      <div class="cq">${ev.title}</div>
+      ${winnerText}
+      ${bars}
+    </div>
+    <div class="cbot">
+      <div class="cinfo">
+        <div class="ci"><span class="ci-v">₡${fmt(ev.volume)}</span><span class="ci-l">Volume</span></div>
+        <div class="ci"><span class="ci-v">${ev.players}</span><span class="ci-l">Players</span></div>
+        <div class="ci"><span class="ci-v">${isFinished ? '—' : dl}</span><span class="ci-l">${isFinished ? 'Archive' : 'Remaining'}</span></div>
+      </div>
+      <button class="btn-bet" ${isFinished ? 'disabled style="opacity:0;"' : ''} onclick="event.stopPropagation();openM(${ev.id})">Place bet →</button>
+    </div>
+  </div>`;
+}
+
+function renderAll(list){
+  const g = document.getElementById('grid');
+  if(!g) return;
+  g.innerHTML = list.length ? list.map(renderCard).join('') : '<div class="empty">No events found</div>';
+  
+  if(document.getElementById('s-ev')) document.getElementById('s-ev').textContent = events.filter(e => e.status !== 'finished').length;
+  if(document.getElementById('s-vol')) document.getElementById('s-vol').textContent = '₡' + fmt(events.reduce((s,e) => s + e.volume, 0));
+}
+
+async function openM(id){
+  const uid = await SHARED.getCurrentUser();
+  
+  if(!uid) {
+    document.getElementById('auth-modal').classList.add('on');
+    toast('🔐', 'Please log in to place a bet!');
+    return;
+  }
+
+  curEv = events.find(e => e.id === id); 
+  selOut = null;
+  document.getElementById('mttl').textContent = curEv.title;
+  document.getElementById('bal-lbl').textContent = 'Balance: ₡' + balance.toLocaleString();
+  document.getElementById('iamt').value = 100;
+  
+  const row = document.getElementById('odds-row');
+  if(curEv.type === 'yesno'){
+    row.innerHTML = `<button class="obtn yes-b" onclick="selO('yes',this)"><div class="obtn-lbl">Yes</div><div class="obtn-pct">${curEv.yes}%</div></button>
+    <button class="obtn no-b" onclick="selO('no',this)"><div class="obtn-lbl">No</div><div class="obtn-pct">${curEv.no}%</div></button>`;
+  } else {
+    row.innerHTML = (curEv.options || []).map(o => `<button class="obtn mul-b" onclick="selO('${o.label.replace(/'/g,"\\'")}',this)"><div class="obtn-lbl">${o.label}</div><div class="obtn-pct">${o.pct}%</div></button>`).join('');
+  }
+  calcPay();
+  document.getElementById('moverlay').classList.add('on');
+}
+
+function selO(o,btn){document.querySelectorAll('.obtn').forEach(b => b.classList.remove('sel')); btn.classList.add('sel'); selOut = o; calcPay()}
+
+function calcPay(){
+  const amt = parseInt(document.getElementById('iamt').value) || 0;
+  const bconf = document.getElementById('bconf');
+  if(!selOut || !curEv){
+    document.getElementById('pamt').textContent = '₡ —'; 
+    document.getElementById('pmult').textContent = 'Choose an option';
+    if(bconf) bconf.disabled = true; 
+    return;
+  }
+  let pct = curEv.type === 'yesno' ? (selOut === 'yes' ? curEv.yes : curEv.no) : curEv.options.find(o => o.label === selOut).pct;
+  const mult = pct > 0 ? 100/pct : 0, pay = Math.round(amt * mult);
+  document.getElementById('pamt').textContent = '₡ ' + pay.toLocaleString();
+  document.getElementById('pmult').textContent = '×' + mult.toFixed(2);
+  if(bconf) bconf.disabled = amt <= 0 || amt > balance || !selOut;
+}
+
+function setAmt(v){document.getElementById('iamt').value = Math.min(v, balance); calcPay()}
+
+async function doBet(){ 
+  const amt = parseInt(document.getElementById('iamt').value) || 0;
+  if(!selOut || amt <= 0 || amt > balance) return;
+  
+  // Show loading state on the button
+  const btn = document.getElementById('bconf');
+  const oldTxt = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Processing...";
+
+  try {
+    balance -= amt;
+    await SHARED.setBalance(balance); 
+    
+    if(document.getElementById('bal-num')) {
+        document.getElementById('bal-num').textContent = balance.toLocaleString();
+    }
+    
+    let pct = curEv.type === 'yesno' 
+        ? (selOut === 'yes' ? curEv.yes : curEv.no) 
+        : curEv.options.find(o => o.label === selOut).pct;
+    
+    let outcomeLabel = selOut === 'yes' ? 'Yes' : (selOut === 'no' ? 'No' : selOut);
+    
+    await SHARED.addBet({
+      eventId: curEv.id,
+      title: curEv.title,
+      outcome: outcomeLabel,
+      amount: amt,
+      pct: pct,
+      status: 'active',
+      deadline: curEv.deadline
+    });
+
+    closeM();
+    await loadEvents(); 
+    toast('✅', `Bet of ₡${amt.toLocaleString()} accepted!`);
+  } catch (e) {
+    console.error(e);
+    toast('❌', 'Error placing bet');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = oldTxt;
+  }
+}
+
+function closeM(){document.getElementById('moverlay').classList.remove('on')}
+function tryClose(e){if(e.target === document.getElementById('moverlay')) closeM()}
+
+// ── (Code: light248) ────────────────
+const secretSequence = ['l', 'i', 'g', 'h', 't', '2', '4', '8'];
+let currentPosition = 0;
+
+document.addEventListener('keydown', (e) => {
+  const key = e.key.toLowerCase();
+  if (key === secretSequence[currentPosition]) {
+    currentPosition++;
+    if (currentPosition === secretSequence.length) {
+      activateAdminMode();
+      currentPosition = 0;
+    }
+  } else {
+    currentPosition = 0;
+  }
+});
+
+function activateAdminMode() {
+  const btn = document.querySelector('.adm-toggle');
+  if (btn) {
+    btn.style.display = 'block';
+    document.getElementById('adm').classList.add('on');
+    populateAdminDropdown();
+    toast('🛠', 'Admin mode activated!');
+  }
+}
+
+function toggleAdm() {
+  document.getElementById('adm').classList.toggle('on');
+  if (document.getElementById('adm').classList.contains('on')) populateAdminDropdown(); 
+}
+
+async function addEv(){
+  const q = document.getElementById('a-q').value.trim();
+  const dl = document.getElementById('a-dl').value;
+  if(!q || !dl) { toast('⚠️','Please fill in all fields'); return; }
+
+  const type = document.getElementById('a-type').value;
+  const ev = {
+    title: q,
+    type: type,
+    tag: document.getElementById('a-tag').value,
+    deadline: dl,
+    status: 'active',
+    volume: 0,
+    players: 0,
+    yes: 50,
+    no: 50
+  };
+
+  if(type === 'multi'){
+    const opts = (document.getElementById('a-opts').value || 'Option 1,Option 2').split(',').map(s=>s.trim()).filter(Boolean);
+    ev.options = opts.map(l => ({label: l, pct: Math.floor(100/opts.length)}));
+  }
+
+  toast('⏳', 'Publishing...');
+  await SHARED.addEvent(ev); // SUPABASE
+  
+  document.getElementById('a-q').value=''; 
+  document.getElementById('a-dl').value='';
+  document.getElementById('adm').classList.remove('on');
+  
+  await loadEvents();
+  toast('🎉', 'Event published to cloud!');
+}
+
+async function populateAdminDropdown() {
+  const all = await SHARED.getEvents();
+  if (!all || !Array.isArray(all)) return;
+
+  const resEv = document.getElementById('res-ev');
+  resEv.innerHTML = '<option value="">Choose event...</option>' + 
+    all.filter(e => e.status !== 'finished').map(e => `<option value="${e.id}">${e.title.substring(0, 25)}...</option>`).join('');
+
+  const delList = document.getElementById('delete-list');
+  delList.innerHTML = all.map(e => `
+    <div style="display:flex; justify-content:space-between; padding:5px; background:rgba(0,0,0,0.2); margin-bottom:4px; border-radius:4px; font-size:11px;">
+      <span>${e.title.substring(0, 20)}...</span>
+      <button onclick="confirmDelete(${e.id})" style="color:var(--red); background:none; border:none; cursor:pointer;">[Delete]</button>
+    </div>
+  `).join('');
+}
+
+async function confirmDelete(id) {
+  if (confirm("Delete permanently?")) {
+    await SHARED.deleteEvent(id);
+    await loadEvents();
+    toast('🗑', 'Deleted from database');
+  }
+}
+
+async function updateResOptions() {
+  const evId = document.getElementById('res-ev').value;
+  const optSelect = document.getElementById('res-opt');
+  if(!evId) { optSelect.disabled = true; return; }
+  
+  const ev = events.find(e => e.id == evId); 
+  if(!ev) return;
+  
+  optSelect.disabled = false;
+  if(ev.type === 'yesno') {
+    optSelect.innerHTML = `
+      <option value="">Choose result...</option>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
+    `;
+  } else {
+    // For multiple-choice events
+    optSelect.innerHTML = '<option value="">Choose result...</option>' + 
+      (ev.options || []).map(o => `<option value="${o.label}">${o.label}</option>`).join('');
+  }
+}
+
+async function resolveEv() {
+  const evId = document.getElementById('res-ev').value;
+  const winner = document.getElementById('res-opt').value;
+  
+  if(!evId || !winner || winner === "") {
+    toast('⚠️', 'Choose an event and a result!');
+    return;
+  }
+
+  // Disable the button while the request is processing
+  const btn = document.querySelector('button[onclick="resolveEv()"]');
+  if(btn) { btn.disabled = true; btn.textContent = "Processing..."; }
+
+  try {
+    await SHARED.resolveEvent(evId, winner); 
+    
+    toast('🏁', `Event resolved! Winner: ${winner}`);
+    document.getElementById('adm').classList.remove('on');
+    await loadEvents(); // Refresh events
+  } catch (e) {
+    console.error("Page error:", e);
+    toast('❌', 'Server error. Check the console.');
+  } finally {
+    // Re-enable the button
+    if(btn) { btn.disabled = false; btn.textContent = "Confirm result"; }
+  }
+}
+
+let tTimer;
+function toast(ico,msg){
+  clearTimeout(tTimer);
+  const t = document.getElementById('toast');
+  document.getElementById('t-ico').textContent = ico;
+  document.getElementById('t-msg').textContent = msg;
+  t.classList.add('on');
+  tTimer = setTimeout(() => t.classList.remove('on'), 3500);
+}
+
+
+let isRegisterMode = false;
+
+function toggleAuthMode() {
+    isRegisterMode = !isRegisterMode;
+    document.getElementById('auth-title').textContent = isRegisterMode ? 'Register' : 'Sign in';
+    document.getElementById('btn-login').style.display = isRegisterMode ? 'none' : 'block';
+    document.getElementById('btn-register').style.display = isRegisterMode ? 'block' : 'none';
+    document.getElementById('reg-name-group').style.display = isRegisterMode ? 'block' : 'none';
+    
+    const switchText = document.getElementById('auth-switch-text');
+    const toggleLink = document.getElementById('auth-toggle-link');
+    if (switchText) switchText.textContent = isRegisterMode ? 'Already have an account? ' : 'No account yet? ';
+    if (toggleLink) toggleLink.textContent = isRegisterMode ? 'Sign in' : 'Register';
+}
+
+async function handleAuth(isSignUp) {
+    const email = document.getElementById('auth-email').value.trim();
+    const pass = document.getElementById('auth-pass').value;
+    const nameInput = document.getElementById('auth-name');
+    const name = nameInput ? nameInput.value.trim() : 'Player';
+
+    if (!email || pass.length < 6) {
+        toast('⚠️', 'Enter a valid email and password (at least 6 characters)'); 
+        return;
+    }
+
+    try {
+        if (isSignUp) {
+            await SHARED.signUp(email, pass, name);
+            toast('✅', 'Registration successful!');
+        } else {
+            await SHARED.logIn(email, pass);
+            toast('✅', 'Login successful!');
+        }
+        setTimeout(() => location.reload(), 1000); 
+    } catch (e) {
+        console.error("Auth error:", e);
+        if (e.message.includes("Invalid login credentials")) {
+            toast('❌', 'Invalid email or password');
+        } else {
+            toast('❌', e.message || 'Authentication error');
+        }
+    }
+}
+
+
+
+
+
+async function forgotPassword() {
+    const email = document.getElementById('auth-email').value;
+    if (!email) {
+        toast('⚠️', 'Enter your email above, then click "Forgot password?"');
+        return;
+    }
+    
+    try {
+        toast('⏳', 'Sending email...');
+        await SHARED.resetPassword(email);
+        toast('✉️', 'Recovery email sent! Check your inbox.');
+    } catch (e) {
+        console.error(e);
+        toast('❌', 'Error: ' + (e.message || 'Failed to send email'));
+    }
+}
+</script>
+</body>
+</html>
